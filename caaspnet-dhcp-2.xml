@@ -1,52 +1,57 @@
 <network>
-  <name>caasp</name>
+  <name>caaspnet</name>
   <forward mode='nat'>
     <nat>
       <port start='1024' end='65535'/>
     </nat>
   </forward>
   <bridge name='caasp-br1' stp='on' delay='0'/>
+  <domain name="caasplab.com" localOnly="yes"/>
   <dns>
     <forwarder addr='8.8.8.8'/>
     <txt name='example' value='example value'/>
-    <host ip='172.17.18.1'>
-      <hostname>caasphost.suselab.com</hostname>
+    <host ip='172.25.0.1'>
+      <hostname>caasphost.caasplab.com</hostname>
       <hostname>caasphost</hostname>
     </host>
-    <host ip='172.17.18.99'>
-      <hostname>admin.suselab.com</hostname>
+    <host ip='172.25.0.100'>
+      <hostname>admin.caasplab.com</hostname>
       <hostname>admin</hostname>
     </host>
-    <host ip='172.17.18.91'>
-      <hostname>master01.suselab.com</hostname>
+    <host ip='172.25.0.101'>
+      <hostname>master01.caasplab.com</hostname>
       <hostname>master01</hostname>
     </host>
-    <host ip='172.17.18.11'>
-      <hostname>worker01.suselab.com</hostname>
+    <host ip='172.25.0.111'>
+      <hostname>worker01.caasplab.com</hostname>
       <hostname>worker01</hostname>
     </host>
-    <host ip='172.17.18.12'>
-      <hostname>worker02.suselab.com</hostname>
+    <host ip='172.25.0.112'>
+      <hostname>worker02.caasplab.com</hostname>
       <hostname>worker02</hostname>
     </host>
-    <host ip='172.17.18.13'>
-      <hostname>worker03.suselab.com</hostname>
+    <host ip='172.25.0.113'>
+      <hostname>worker03.caasplab.com</hostname>
       <hostname>worker03</hostname>
     </host>
-    <host ip='172.17.18.14'>
-      <hostname>worker04.suselab.com</hostname>
+    <host ip='172.17.0.114'>
+      <hostname>worker04.caasplab.com</hostname>
       <hostname>worker04</hostname>
     </host>
+    <host ip='192.168.100.10'>   
+      <hostname>smt.suselab.com</hostname>
+      <hostname>smt</hostname>
+    </host>      
   </dns>
-  <ip address='172.17.18.1' netmask='255.255.255.0'>
+  <ip address='172.25.0.1' netmask='255.255.255.0'>
     <dhcp>
-      <range start='172.17.18.120' end='172.17.18.180'/>
-      <host mac='52:54:00:44:c3:99' name='admin.suselab.com' ip='172.17.18.99'/>
-      <host mac='52:54:00:44:c3:91' name='master01.suselab.com' ip='172.17.18.01'/>
-      <host mac='52:54:00:44:c3:11' name='worker01.suselab.com' ip='172.17.18.11'/>
-      <host mac='52:54:00:44:c3:12' name='worker02.suselab.com' ip='172.17.18.12'/>
-      <host mac='52:54:00:44:c3:13' name='worker03.suselab.com' ip='172.17.18.13'/>
-      <host mac='52:54:00:44:c3:14' name='worker04.suselab.com' ip='172.17.18.14'/>
+      <range start='172.25.0.128' end='172.25.0.254'/>
+      <host mac='52:54:00:44:c3:99' name='admin.caasplab.com' ip='172.25.0.100'/>
+      <host mac='52:54:00:44:c3:91' name='master01.caasplab.com' ip='172.25.0.101'/>
+      <host mac='52:54:00:44:c3:11' name='worker01.cassplab.com' ip='172.25.0.111'/>
+      <host mac='52:54:00:44:c3:12' name='worker02.caasplab.com' ip='172.25.0.112'/>
+      <host mac='52:54:00:44:c3:13' name='worker03.caasplab.com' ip='172.25.0.113'/>
+      <host mac='52:54:00:44:c3:14' name='worker04.caasplab.com' ip='172.25.0.114'/>
     </dhcp>
   </ip>
 </network>
