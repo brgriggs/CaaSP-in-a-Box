@@ -15,7 +15,7 @@
 #################################################################
 #hostnames
 admin=admin
-master=master
+master=master01
 worker1=worker1
 worker2=worker2
 worker3=worker3
@@ -28,10 +28,10 @@ worker2mac=52:54:00:44:c3:12
 worker3mac=52:54:00:44:c3:13
 worker4mac=52:54:00:44:c3:14
 #LabEnvironment
-vmname=c3
+vmname=caasp3
 network=caaspnet
 disk=/data/kvm/
-dnsdom=suselab.com
+dnsdom=caasplab.com
 caaspiso=/data/iso/SUSE-CaaS-Platform-3.0-DVD-x86_64-GM-DVD1.iso
 adminmem=6144
 mastermem=8192
