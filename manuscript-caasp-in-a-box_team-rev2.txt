@@ -1,0 +1,138 @@
+Setup before demo :
+- ssh into kvm server
+- ssh-keygen -R admin -f /root/.ssh/known_hosts
+- notes and firefox open on kvm server
+
+-> intro slides
+Install the admin node :
+
+'installadmin'
+
+Point out that it gets the IP address linked to the MAC address
+
+Complete the installation wizard :
+Select keyboard, root password:linux, 
+Regserver : http://smt.suselab.com
+NTP server : 172.25.0.1 or caasphost.caasplab.com
+
+--> Run slides
+
+Once installation is completed - Log in to the console of the admin server and do
+top --> xz (unpacking images)
+docker ps (repeat - to see the bootstrap services get launched)
+
+In firefox hit https://admin.caasplab.com.com
+Create a user - admin@caasplab.com, password susecaasp, login
+
+On the initial CaaSP configuration screen accept the defaults except for "Install Tiller", which should be checked (installed) too.
+--> Show the network overlay and explain that 172.16.0.0/16 - 172.23.0.0/16 networks should NOT be used - point out the comment.
+
+--> Next on the "Bootstrap your CaaS Platform" screen.
+Explain that one could download and modify the autoyast profile and post it somewhere else. It is not possible (or at least supported) to get to the version in the admin server as it seems to be provided by some container/microservice.
+
+Now launch installation of the master, worker1 and worker2 nodes.
+Master
+
+'installmaster'
+
+Worker1
+
+'installworker1'
+
+Worker2
+
+'installworker2
+
+Post installation of each node they should appear in "Select nodes and roles".
+--> Accept all nodes
+
+Assign roles as indicated by the hostnames and hit next.
+In the "Confirm Bootstrap" dialog set the following :
+External Kubernetes API FQDN : master.suselab.com
+External Dashboard FQDN : admin.suselab.com
+Hit "Bootstrap cluster"
+
+- run more slides ~6-7 minutes -
+
+When all nodes are applied, download kubeconfig (explain that it is served out of the master, so new certificate and login to DEX is expected)
+
+Save it to ~/.kube/config on the KVM host
+
+From the KVM host run 
+kubectl cluster-info
+kubectl get nodes
+kubectl get pods 
+?? no pods
+kubectl get namespaces
+kubectl -n kube-system get pods
+
+Deploy a simple pod 
+kubectl apply -f ~/manifests/nginx-deployment.yaml
+
+kubectl get deployments
+kubectl get pods
+kubectl get services
+what ? no nginx service ?
+kubectl apply -f ~/manifests/nginx-service.yaml
+
+->> http://worker1:30000/
+
+Show cAdvisor - http://worker1:4194/containers/ (scroll down the page - shows stats for the node in question)
+
+Towards the end :
+Graceful shutdown and startup
+This is documented in the admin guide and is recommended to reduce logged errors. However, it is possible to not follow this order as long as all nodes are stopped in a graceful way. 
+Log in to the admin node 
+
+Disable scheduling
+kubectl get nodes -o name | xargs -I{} kubectl cordon {}
+
+Gracefully shut down all worker nodes.
+docker exec -it $(docker ps -q -f name=salt-master) salt --async -G 'roles:kube-minion' cmd.run 'systemctl poweroff'
+
+Gracefully shut down all master nodes.
+docker exec -it $(docker ps -q -f name=salt-master) salt --async -G 'roles:kube-master' cmd.run 'systemctl poweroff'
+
+Shut down the administration node:
+systemctl poweroff
+
+Startup :
+start admin node, once it is up, start the master and remaining nodes 
+ssh into admin
+kubectl get nodes - check that they are ready
+kubectl get nodes -o name | xargs -I{} kubectl uncordon {}
+
+Further demos as time/memory allows.
+
+- Deploy monitoring tools (heapster/grafana)
+kubectl apply -f https://raw.githubusercontent.com/SUSE/caasp-services/master/contrib/addons/heapster/heapster.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/influxdb.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/heapster/release-1.3/deploy/kube-config/influxdb/grafana-deployment.yaml
+curl https://raw.githubusercontent.com/kubernetes/heapster/release-1.3/deploy/kube-config/influxdb/grafana-service.yaml -o grafana-service.yaml
+vi grafana-service.yaml (uncomment the type NodePort line)
+kubectl apply -f grafana-service.yaml
+kubectl -n=kube-system describe service monitoring-grafana|grep NodePort
+Hit http://worker1:<port>
+
+- Deploy kubernetes dashboard
+kubectl apply -f ~/manifests/kubernetes-dashboard-1.8.3.yaml
+kubectl apply -f ~/manifests/dashboard-rbac.yaml
+Then we need to start a kube proxy to interface with kubernetes.
+screen kubectl proxy
+^A^D
+
+Hit http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login
+(Skip login)
+
+Sock shop demo :
+git clone https://github.com/microservices-demo/microservices-demo
+kubectl create namespace sock-shop
+kubectl create namespace zipkin
+kubectl create namespace monitoring
+kubectl apply -f microservices-demo/deploy/kubernetes/complete-demo.yaml 
+Then we need to fix some role-binding
+kubectl apply -f ~/manifests/sockshop-privilege-rbac.yaml
+
+Once things have settled (up to 10+ minutes), access the sock-shop through
+http://<any-worker-ip>:30001
+
